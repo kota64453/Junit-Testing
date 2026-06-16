@@ -1,0 +1,51 @@
+package service;
+
+import exception.CustomerExistsException;
+import exception.CustomerNotFoundException;
+import model.Customer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
+public class CustomerService {
+    private List<Customer> customers;
+
+    public CustomerService(List<Customer> customers) {this.customers = new ArrayList<>(customers);}
+    public Customer addCustomer(Customer customer){
+        boolean exists = customers.stream()
+                .anyMatch(c -> c.getId()== customer.getId());
+        if (exists){
+            throw new CustomerExistsException(
+                    "Customer already exists with Id: "+customer.getId());
+        }
+        customers.add(customer);
+        return customer;
+
+        }
+    public List<Customer>getAllCustomers(){return customers;}
+
+  public Customer getCustomerById(int id){
+        return customers.stream()
+                .filter(c -> c.getId()== id)
+                .findFirst()
+                .orElseThrow(() ->
+      new CustomerNotFoundException(
+              "Customer not found with Id: "+id));
+
+  }
+  public boolean deleteCustomer(int id){
+        boolean removed = customers.removeIf(c -> c.getId() == id);
+        if (!removed){
+            throw new CustomerNotFoundException(
+                    "Cannot delete. Customer not found with Id: " + id);
+        }
+        return true;
+  }
+  public double getTotalBalance(){
+        return customers.stream()
+                .mapToDouble(Customer::getBalance)
+                .sum();
+  }
+
+}
